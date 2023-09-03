@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 use App\Repository\MicroPostRepository;
 use App\Entity\MicroPost;
@@ -16,9 +17,8 @@ class MicroPostController extends AbstractController
     #[Route('/micro-post', name: 'app_micro_post')]
 	public function index(MicroPostRepository $post	): Response
 	{
-		dd($post->findAll());
-        return $this->render('micro_post/index.html.twig', [
-            'controller_name' => 'MicroPostController',
+	return $this->render('micro_post/index.html.twig', [
+            'posts' => $post->findAll(),
         ]);
     }
     
@@ -35,17 +35,34 @@ class MicroPostController extends AbstractController
        return new Response('success');
     }
 
-    #[Route('/micro-post/{id}', name: 'app_micro_post_show')]
-    public function showOne($id, MicroPostRepository $posts): Response 
+    #[Route('/micro-post/{post}', name: 'app_micro_post_show')]
+    public function showOne(MicroPost $post): Response 
     {
-	    dd($posts->find($id));
-
+        return $this->render('micro_post/show.html.twig', [
+            'post' => $post,
+        ]);
     } 
 
     #[Route('micro-post-show/{post}', name:"app_micro_post_show_param")]
     public function showOneForParam(MicroPost $post): Response
     {
-	    // by default it is fetching by id. just read the documentation on sensio/framework-extra-bundle
 	    dd($post);
+    } 
+
+
+    #[Route('/micro-post/add', name: 'app_micro_post_add', priority: 2)] 
+    public function add(): Response 
+    {
+	    $microPost = new MicroPost();
+	    $form = $this->createFormBuilder($microPost)
+		  ->add('title')
+		  ->add('text')
+	  	  ->add('submit', SubmitType::class, ['label' => 'Save'])
+		  ->getForm(); 
+
+	    return $this->renderForm('micro_post/add.html.twig', [
+	    	'form' => $form
+	    ]);
+
     }
 }
