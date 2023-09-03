@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\HttpFoundation\Request;
 
 use App\Repository\MicroPostRepository;
 use App\Entity\MicroPost;
@@ -51,7 +52,7 @@ class MicroPostController extends AbstractController
 
 
     #[Route('/micro-post/add', name: 'app_micro_post_add', priority: 2)] 
-    public function add(): Response 
+    public function add(Request $request, EntityManagerInterface $entityManager): Response 
     {
 	    $microPost = new MicroPost();
 	    $form = $this->createFormBuilder($microPost)
@@ -59,6 +60,23 @@ class MicroPostController extends AbstractController
 		  ->add('text')
 	  	  ->add('submit', SubmitType::class, ['label' => 'Save'])
 		  ->getForm(); 
+
+        $form->handleRequest($request);
+        // handleRequest will let the form get the data that is being sent during the request and try to match to the fields that this form defines
+        // including any validation constraints and you will need to know if the form is submitted 
+        if ($form->isSubmitted() && $form->isValid()){
+            $post = $form->getData();
+            // read the data from the form
+            $post->setCreated(new DateTime());
+            $entityManager->persist($post);
+            $entityManager->flush();
+
+            //todo: Add a flash message 
+            $this->addFlash('success', 'Your micro post have been successfully added');
+
+            // Redirect to another page
+            return $this->redirectToRoute('app_micro_post');            
+        }  
 
 	    return $this->renderForm('micro_post/add.html.twig', [
 	    	'form' => $form
