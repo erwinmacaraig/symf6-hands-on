@@ -1,7 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} Editing an Existing Post {% endblock %}
+{% block title %}
+	Editing an Existing Post
+{% endblock %}
+{% block bread %}
+	-&gt; Edit Post
+{% endblock %}
 
 {% block body %}
-{{ include('micro_post/_form.html.twig') }}
+	{{ include('micro_post/_form.html.twig') }}
 {% endblock %}
