@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 
+use App\Form\MicroPostType;
 use App\Repository\MicroPostRepository;
 use App\Entity\MicroPost;
 use DateTime;
@@ -55,11 +56,7 @@ class MicroPostController extends AbstractController
     public function add(Request $request, EntityManagerInterface $entityManager): Response 
     {
 	    $microPost = new MicroPost();
-	    $form = $this->createFormBuilder($microPost)
-		  ->add('title')
-		  ->add('text')
-	  	  ->add('submit', SubmitType::class, ['label' => 'Save'])
-		  ->getForm(); 
+	    $form = $this->createForm(MicroPostType::class, $microPost);
 
         $form->handleRequest($request);
         // handleRequest will let the form get the data that is being sent during the request and try to match to the fields that this form defines
@@ -79,6 +76,35 @@ class MicroPostController extends AbstractController
         }  
 
 	    return $this->renderForm('micro_post/add.html.twig', [
+	    	'form' => $form
+	    ]);
+
+    }
+
+    #[Route('/micro-post/{post}/edit', name: 'app_micro_post_edit')] 
+    public function edit(MicroPost $post, Request $request, EntityManagerInterface $entityManager): Response 
+    {
+        // we let the param converter works here that is why the MicroPost was injected
+
+	   $form = $this->createForm(MicroPostType::class, $post);
+
+        $form->handleRequest($request);
+        // handleRequest will let the form get the data that is being sent during the request and try to match to the fields that this form defines
+        // including any validation constraints and you will need to know if the form is submitted 
+        if ($form->isSubmitted() && $form->isValid()){
+            $post = $form->getData();
+            // read the data from the form
+            $entityManager->persist($post);
+            $entityManager->flush();
+
+            //todo: Add a flash message 
+            $this->addFlash('success', 'Your micro post have been successfully updated');
+
+            // Redirect to another page
+            return $this->redirectToRoute('app_micro_post');            
+        }  
+
+	    return $this->renderForm('micro_post/edit.html.twig', [
 	    	'form' => $form
 	    ]);
 
