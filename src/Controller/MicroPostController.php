@@ -44,6 +44,7 @@ class MicroPostController extends AbstractController
     #[Route('/micro-post/{post}', name: 'app_micro_post_show')]
     public function showOne(MicroPost $post): Response
     {
+        $this->denyAccessUnlessGranted(MicroPost::VIEW, $post);
         return $this->render('micro_post/show.html.twig', [
             'post' => $post,
         ]);
@@ -57,8 +58,12 @@ class MicroPostController extends AbstractController
 
 
     #[Route('/micro-post/add', name: 'app_micro_post_add', priority: 2)]
+
     public function add(Request $request, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        // $this->denyAccessUnlessGranted('PUBLIC_ACCESS');
+        $this->isGranted('IS_AUTHENTICATED_FULLY');
         $microPost = new MicroPost();
         $form = $this->createForm(MicroPostType::class, $microPost);
 
@@ -69,6 +74,7 @@ class MicroPostController extends AbstractController
             $post = $form->getData();
             // read the data from the form
             $post->setCreated(new DateTime());
+            $post->setAuthor($this->getUser());
             $entityManager->persist($post);
             $entityManager->flush();
 
@@ -88,7 +94,7 @@ class MicroPostController extends AbstractController
     public function edit(MicroPost $post, Request $request, EntityManagerInterface $entityManager): Response
     {
         // we let the param converter works here that is why the MicroPost was injected
-
+        $this->denyAccessUnlessGranted(MicroPost::EDIT, $post);
         $form = $this->createForm(MicroPostType::class, $post);
 
         $form->handleRequest($request);
@@ -116,6 +122,7 @@ class MicroPostController extends AbstractController
     #[Route('/micro-post/{post}/comment', name: 'app_micro_post_comment')]
     public function addComment(MicroPost $post, Request $request, CommentRepository $comments, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted("ROLE_COMMENTER");
         // we let the param converter works here that is why the MicroPost was injected
 
         $form = $this->createForm(CommentType::class, new Comment());
@@ -126,6 +133,7 @@ class MicroPostController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $comment = $form->getData();
             $comment->setPost($post);
+            $comment->setAuthor($this->getUser());
             // read the data from the form
             $entityManager->persist($comment);
             $entityManager->flush();

@@ -43,18 +43,22 @@ class AppFixtures extends Fixture
 		$micropost1->setTitle('Welcome S sumfony 6');
 		$micropost1->setText('Learning PHP Framwaorks is fun!');
 		$micropost1->setCreated(new DateTime());
+		$micropost1->setAuthor($user1);
 		$manager->persist($micropost1);
 
 		$micropost2 = new MicroPost();
 		$micropost2->setTitle('PHP for Web Development');
 		$micropost2->setText('This is the way to go');
 		$micropost2->setCreated(new DateTime());
+		$micropost2->setAuthor($user2);
+
 		$manager->persist($micropost2);
 
 		$micropost3 = new MicroPost();
 		$micropost3->setTitle('Flutter for Mobile');
 		$micropost3->setText('I am Leraning Flutter too');
 		$micropost3->setCreated(new DateTime());
+		$micropost3->setAuthor($user1);
 		$manager->persist($micropost3);
 
 
